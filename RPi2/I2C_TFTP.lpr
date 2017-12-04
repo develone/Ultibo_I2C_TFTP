@@ -46,7 +46,8 @@ var
  IPAddress : string;
  //PI2CDevice : ^TI2CDevice;
  MYI2C : PI2CDevice;
-
+ MyPLoggingDevice : ^TLoggingDevice;
+ logflag : Boolean;
 begin
 
 
@@ -56,11 +57,29 @@ begin
  {Display a startup message on the console}
  ConsoleWindowWriteLn(LeftWindow,'Starting I2C_TFTP example');
 
- ConsoleWindowWriteLn(LeftWindow,'Enable Logging');
+ MYI2C:=PI2CDevice(I2CDeviceFindByDescription('BCM2836 BSC0 Master I2C'));
+ ConsoleWindowWriteLn(LeftWindow,'MYI2C ' + IntToStr(sizeof(MYI2C)));
+
+ {
+ The following 3 lines are logging to the console
  CONSOLE_REGISTER_LOGGING:=True;
  LoggingConsoleDeviceAdd(ConsoleDeviceGetDefault);
  LoggingDeviceSetDefault(LoggingDeviceFindByType(LOGGING_TYPE_CONSOLE));
+ }
 
+ {The following 2 lines are logging to a file}
+ LoggingDeviceSetTarget(LoggingDeviceFindByType(LOGGING_TYPE_FILE),'c:\ultibologging.log');
+ LoggingDeviceSetDefault(LoggingDeviceFindByType(LOGGING_TYPE_FILE));
+
+ {
+ MyPLoggingDevice := LoggingDeviceGetDefault();
+ MyPLoggingDevice := LoggingDeviceGetDefault();
+ MyPLoggingDevice := LoggingDeviceGetDefault();
+ ConsoleWindowWriteLn(LeftWindow, 'LoggingDevice Pointer ' +  MyPLoggingDevice^.Target);
+
+ logflag:=LoggingDeviceRedirectOutput(MyPLoggingDevice);
+ ConsoleWindowWriteLn(LeftWindow, 'Logging RedirectOutput ' + BoolToStr(logflag));
+ }
  {Create and start the HTTP Listener for our web status page}
  HTTPListener:=THTTPListener.Create;
  HTTPListener.Active:=True;
@@ -68,8 +87,7 @@ begin
  {Register the web status page, the "Thread List" page will allow us to see what is happening in the example}
  WebStatusRegister(HTTPListener,'','',True);
 
- MYI2C:=PI2CDevice(I2CDeviceFindByDescription('BCM2836 BSC0 Master I2C'));
- ConsoleWindowWriteLn(LeftWindow,'MYI2C ' + inttostr(sizeof(MYI2C)));
+
  while True do
   begin
    //ConsoleWindowWriteLn(LeftWindow,'Starting I2C_TFTP example');
